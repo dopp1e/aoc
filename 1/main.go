@@ -28,6 +28,12 @@ func parseInput(i string) int {
     return ni
 }
 
+func moduloWithQuotient(a, d int) (int, int) {
+    r := a % d
+    b := a - r
+    return r, (b / d)
+}
+
 func fancyRingModulo(a, b int) int {
     a = a % b
 
@@ -38,15 +44,30 @@ func fancyRingModulo(a, b int) int {
     return a
 }
 
-func rotate(r int, i string) int {
+func rotate(r int, i string, alt bool) (int, int) {
     a := parseInput(i)
+
+    c := 0
+
+    if alt {
+        step := 1
+        if a < 0 {
+            step = -1
+        }
+
+        for j := r; j != r + a; j += step {
+            if fancyRingModulo(j, 100) == 0 {
+                c++
+            }
+        }
+    }
 
     t := fancyRingModulo(r + a, 100)
     
-    return t
+    return t, c
 }
 
-func unlockSafe(i []string) int {
+func unlockSafe(i []string, altPass bool) int {
     r := 50
     c := 0
     fmt.Printf("The dial starts pointing at %d.\n", r)
@@ -55,10 +76,15 @@ func unlockSafe(i []string) int {
         if len(element) == 0 {
             continue
         }
-        r = rotate(r, element)
+        x, y := rotate(r, element, altPass)
+        r = x
         fmt.Printf("The dial is rotated %s to point at %d.\n", element, r)
-        if r == 0 {
-            c++
+        if altPass {
+            c += y
+        } else {
+            if r == 0 {
+                c++
+            }
         }
     } 
 
@@ -68,7 +94,13 @@ func unlockSafe(i []string) int {
 func partOne(f string) int {
     contents := common.ReadFile(f)
 
-    return unlockSafe(contents)
+    return unlockSafe(contents, false)
+}
+
+func partTwo(f string) int {
+    contents := common.ReadFile(f)
+
+    return unlockSafe(contents, true)
 }
 
 func main() {
@@ -78,4 +110,8 @@ func main() {
     passOne := partOne(f)
 
     fmt.Printf("Password is %d.", passOne)
+
+    passTwo := partTwo(f)
+
+    fmt.Printf("Alternative password is %d.", passTwo)
 }
