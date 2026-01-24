@@ -1,11 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
-    "fmt"    
-    "doppie.com/aoc-common"
+
+	common "doppie.com/aoc-common"
 )
 
 
@@ -64,13 +65,17 @@ func unlockSafe(i []string) int {
     return c
 }
 
+func partOne(f string) int {
+    contents := common.ReadFile(f)
+
+    return unlockSafe(contents)
+}
+
 func main() {
     argsWithoutProg := os.Args[1:]
     f := argsWithoutProg[0]
 
-    contents := common.ReadFile(f)
+    passOne := partOne(f)
 
-    pass := unlockSafe(contents)
-
-    fmt.Printf("Password is %d.", pass)
+    fmt.Printf("Password is %d.", passOne)
 }
