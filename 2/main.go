@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"doppie.com/aoc-common"
+	common "doppie.com/aoc-common"
 )
 
 func extractRange(idr string) (int, int) {
@@ -48,6 +48,35 @@ func isValid(id int) bool {
     return true
 }
 
+func isComposedOfSequences(id int) bool {
+    s := strconv.Itoa(id)
+    sLen := len(s)
+
+    
+    for i := 0; i < sLen / 2; i++ {
+        part := s[0:i+1]
+        partLen := len(part)
+        doReturn := false
+        for j := 0; j < sLen; j += partLen {
+            if (j+partLen) > sLen {
+                doReturn = false
+                continue
+            }
+            checkPart := s[(j):(j+partLen)]
+            if (checkPart != part) {
+                doReturn = false
+                break
+            }
+            doReturn = true
+        }
+        if (doReturn) {
+            return true
+        }
+    }
+
+    return false
+}
+
 func findInvalidIDs(start, end int) []int {
     a := make([]int, 0)
 
@@ -60,9 +89,22 @@ func findInvalidIDs(start, end int) []int {
     return a
 }
 
+func findInvalidSequences(start, end int) []int {
+    a := make([]int, 0)
 
-func identify(c string) int {
+    for i := start; i <= end; i++ {
+        if isComposedOfSequences(i) {
+            a = append(a, i)
+        }
+    }
+
+    return a
+}
+
+
+func identify(c string) (int, int) {
     sum := 0
+    sumS := 0
 
     split := strings.SplitSeq(c, ",")
     for idr := range split {
@@ -72,10 +114,16 @@ func identify(c string) int {
 
         for _, v := range invalid {
             sum += v
-        } 
+        }
+
+        invalidSequences := findInvalidSequences(start, end)
+        
+        for _, w := range invalidSequences {
+            sumS += w
+        }
     }
 
-    return sum
+    return sum, sumS
 }
 
 func main() {
@@ -86,7 +134,8 @@ func main() {
 
     content := strings.Join(contents, "")
 
-    sum := identify(content)
+    sum, sumS := identify(content)
 
-    fmt.Printf("Sum of invalid IDs equals %d.", sum)
+    fmt.Printf("Sum of invalid IDs equals %d.\n", sum)
+    fmt.Printf("Sum of invalid IDs (checked as sequences) equals %d.\n", sumS)
 }
