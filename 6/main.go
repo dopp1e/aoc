@@ -71,6 +71,37 @@ func doMathHomework(c []string) int {
 	return sum
 }
 
+func isMathCharacter(c rune) bool {
+	return c == '+' || c == '*'
+} 
+
+func getRanges(s string) [][2]int {
+	r := make([][2]int, 0)
+	
+	curStart := 0
+
+	for i := 1; i < len(s); i++ {
+		if (isMathCharacter(rune(s[i]))) {
+			r = append(r, [2]int{curStart, i - 1})
+			curStart = i
+		}
+	}
+
+	return append(r, [2]int{curStart, len(s) - 1})
+}
+
+func betterHomework(c []string) int {
+	sum := 0
+
+	r := getRanges(c[len(c) - 1])
+
+	for i := 0; i < len(c) - 1; i++ {
+		
+	}
+
+	return sum
+}
+
 func main() {
     argsWithoutProg := os.Args[1:]
     f := argsWithoutProg[0]
