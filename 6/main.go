@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -87,16 +88,53 @@ func getRanges(s string) [][2]int {
 		}
 	}
 
-	return append(r, [2]int{curStart, len(s) - 1})
+	return append(r, [2]int{curStart, len(s)})
+}
+
+func assembleNumber(c []string, row int) int {
+	sum := 0
+	power := 0
+
+	for i := (len(c) - 2); i >= 0; i-- {
+		r := rune(c[i][row])
+		if r == ' ' {
+			continue
+		}
+		n := int(r - '0')
+		fmt.Printf("%d\n", n)
+		sum += n * int(math.Pow(10, float64(power)))
+		power++
+	}
+
+	return sum
 }
 
 func betterHomework(c []string) int {
 	sum := 0
+	opId := len(c) - 1
 
-	r := getRanges(c[len(c) - 1])
+	r := getRanges(c[opId])
 
-	for i := 0; i < len(c) - 1; i++ {
-		
+	for i := 0; i < len(r); i++ {
+		op := c[opId][r[i][0]]
+		v := 0
+		if op == '*' {
+			v = 1
+		}
+		numCount := r[i][1] - r[i][0]
+		// instructions say left to right
+		// it does not really matter for this, but for the sake of compatibility
+		// with other operations (subtraction, division), it'll be done that way
+		for j := 0; j < numCount; j++ {
+			num := assembleNumber(c, r[i][1] - j - 1)
+			fmt.Printf("Total: %d\n\n", num)
+			if op == '*' {
+				v *= num
+			} else {
+				v += num
+			}
+		}
+		sum += v
 	}
 
 	return sum
@@ -110,5 +148,9 @@ func main() {
 
 	a := doMathHomework(contents)
 
-	fmt.Printf("Grand total equals %d", a)
+	fmt.Printf("Grand total equals %d.\n", a)
+
+	b := betterHomework(contents)
+
+	fmt.Printf("Better total equals %d.\n", b)
 }
