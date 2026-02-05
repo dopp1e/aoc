@@ -66,7 +66,21 @@ func areAlreadyInList(s1, s2 string, passed map[string]bool) bool {
 	return ok1 || ok2
 }
 
-func connectBoxes(c []string, connections int) int {
+func countIDs(m map[string]int) int {
+	arr := make([]int, 0)
+
+	for k := range m {
+		if slices.Contains(arr, m[k]) {
+			continue
+		}
+
+		arr = append(arr, m[k])
+	}
+
+	return len(arr)
+}
+
+func connectBoxes(c []string, connections int, ext bool) int {
 	m := 1
 
 	// calculate all distances between points...
@@ -97,14 +111,15 @@ func connectBoxes(c []string, connections int) int {
 
 	// keeping connectionIDs
 	connectionMap := make(map[string]int)
+	// keep track of which ones have been assigned
+	assignMap := make(map[string]bool)
 	currentIndex := 0
 
-	for i := 0; connections > 0; i++ {
+	for i := 0; connections > 0 || ext; i++ {
 		if i >= len(list) {
 			break
 		}
 		cur := list[i]
-		// if both have already been assigned... continue???
 		c1, ok1 := connectionMap[cur.s1]
 		c2, ok2 := connectionMap[cur.s2]
 		if ok1 && ok2 {
@@ -115,28 +130,48 @@ func connectBoxes(c []string, connections int) int {
 				}
 			}
 			connections--
+			if (ext && len(assignMap) == len(c) && countIDs(connectionMap) == 1) {
+				x1, _, _ := unpackCoordinates(cur.s1)
+				x2, _, _ := unpackCoordinates(cur.s2)
+				return x1 * x2 
+			}
 			continue
 		}
 		// if only one has been connected
 		if ok1 != ok2 {
 			// add whichever one is not connected to where the other one is connected
 			if ok1 {
+				assignMap[cur.s2] = true
 				connectionMap[cur.s2] = c1
 				//fmt.Printf("Adding %s to %d.\n", cur.s2, c1)
 			} else if ok2 {
 				connectionMap[cur.s1] = c2
+				assignMap[cur.s1] = true
 				//fmt.Printf("Adding %s to %d.\n", cur.s1, c2)
 			}
 			connections--
+			if (ext && len(assignMap) == len(c) && countIDs(connectionMap) == 1) {
+				x1, _, _ := unpackCoordinates(cur.s1)
+				x2, _, _ := unpackCoordinates(cur.s2)
+				return x1 * x2 
+			}
 			continue
 		}
 		// if neither is connected
 		// give them indices
 		connectionMap[cur.s1] = currentIndex
 		connectionMap[cur.s2] = currentIndex
+		// set their assignments
+		assignMap[cur.s1] = true
+		assignMap[cur.s2] = true
 		currentIndex++
 		//fmt.Printf("New connection between %s and %s made.\n", cur.s1, cur.s2)
 		connections--
+		if (ext && len(assignMap) == len(c) && countIDs(connectionMap) == 1) {
+			x1, _, _ := unpackCoordinates(cur.s1)
+			x2, _, _ := unpackCoordinates(cur.s2)
+			return x1 * x2 
+		}
 	}
 
 	// count instances of numbers
@@ -175,11 +210,15 @@ func main() {
 
     contents := common.ReadFile(f)[1:]
 
-	c := connectBoxes(contents, 10)
+	c := connectBoxes(contents, 10, false)
 
 	fmt.Printf("The size of the circuit with 10 connections equals %d!\n", c)
 
-	d := connectBoxes(contents, 1000)
+	d := connectBoxes(contents, 1000, false)
 
 	fmt.Printf("The size of the circuit with 1000 connections equals %d!\n", d)
+
+	e := connectBoxes(contents, 1000, true)
+
+	fmt.Printf("The actual size of the circuit equals %d!\n", e)
 }
